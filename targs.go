@@ -12,6 +12,7 @@ type Option struct {
 // HandleArgs processes os.Args against the provided options.
 func HandleArgs(args []string, options []Option, invalidArg func()) {
 	seen := []string{}
+
 	fail := func() {
 		if invalidArg != nil {
 			invalidArg()
