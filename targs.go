@@ -19,7 +19,7 @@ func HandleArgs(args []string, options []Option, invalidArg func()) {
 		}
 	}
 
-	for i := 1; i < len(args); i++ {
+	for i := 0; i < len(args); i++ {
 		matched := false
 
 		if slices.Contains(seen, args[i]) {
