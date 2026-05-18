@@ -51,6 +51,9 @@ Hello, Alice!
 
 $ go run . --verbose
 verbose mode enabled
+
+$ go run . --port=8080
+port 8080
 ```
 
 ## API

@@ -1,15 +1,33 @@
 package targs
 
-import "slices"
+import (
+	"slices"
+	"strings"
+)
 
-// Option represents a CLI flag with its associated handler.
 type Option struct {
 	Options     []string
-	Handler     func(*string)
+	Handler     func(string)
 	HasExtraArg bool
 }
 
-// HandleArgs processes os.Args against the provided options.
+func stripEqualSign(arg string) string {
+	if idx := strings.IndexRune(arg, '='); idx != -1 {
+		return arg[:idx+1]
+	}
+
+	return arg
+}
+
+func isEqualSignArg(arg string) bool {
+	return strings.ContainsRune(arg, '=')
+}
+
+func getEqualSignExtraArg(arg string) string {
+	_, after, _ := strings.Cut(arg, "=")
+	return after
+}
+
 func HandleArgs(args []string, options []Option, invalidArg func()) {
 	seen := []string{}
 
@@ -21,30 +39,41 @@ func HandleArgs(args []string, options []Option, invalidArg func()) {
 
 	for i := 0; i < len(args); i++ {
 		matched := false
+		argKey := stripEqualSign(args[i])
 
-		if slices.Contains(seen, args[i]) {
+		if slices.Contains(seen, argKey) {
 			fail()
 			return
 		}
 
 		for _, option := range options {
-			if !slices.Contains(option.Options, args[i]) {
+			if !slices.Contains(option.Options, argKey) {
 				continue
 			}
 
 			matched = true
-			var extraArg *string
+			var extraArg string
 
 			if option.HasExtraArg {
-				i++
-				if i >= len(args) {
-					return
+				if isEqualSignArg(args[i]) {
+					extraArg = getEqualSignExtraArg(args[i])
+				} else {
+					i++
+
+					if i >= len(args) {
+						return
+					}
+
+					extraArg = args[i]
 				}
-				extraArg = &args[i]
+
 			}
 
 			option.Handler(extraArg)
-			seen = append(seen, option.Options...)
+
+			for _, v := range option.Options {
+				seen = append(seen, stripEqualSign(v))
+			}
 
 			break
 		}
